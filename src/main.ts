@@ -1,0 +1,25 @@
+import { day01 } from './days/day01';
+import { day02 } from './days/day02';
+import { day03 } from './days/day03';
+import { day04 } from './days/day04';
+// import { day05 } from './days/day05';
+// import { day06 } from './days/day06';
+// import { day07 } from './days/day07';
+// import { day08 } from './days/day08';
+// import { day09 } from './days/day09';
+// import { day10 } from './days/day10';
+// import { day11 } from './days/day11';
+// import { day12 } from './days/day12';
+
+// day12.printResult();
+// day11.printResult();
+// day10.printResult();
+// day09.printResult();
+// day08.printResult();
+// day07.printResult();
+// day06.printResult();
+// day05.printResult();
+day04.printResult();
+day03.printResult();
+day02.printResult();
+day01.printResult();

@@ -15,7 +15,7 @@ export class day06 {
       result += '</div>';
     }
 
-    printGrid(inputArray);
+    //printGrid(inputArray);
 
     const sums: string[][] = [];
     const octopusSums: string[][] = [];

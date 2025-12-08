@@ -56,7 +56,7 @@ export class day07 {
     }
 
     let splits = processGridNaive(inputGridNaive);
-    printGrid(inputGridNaive);
+    // printGrid(inputGridNaive);
 
     result += 'Beam splits: ';
     result += splits;
@@ -100,6 +100,8 @@ export class day07 {
     for (let i = 0; i < inputGridNaive.length; i++) {
       processRow(i);
     }
+
+    // printGridNum(inputGridSplitter);
 
     result += 'Alternate pasts: ';
     result += inputGridSplitter[inputGridSplitter.length - 2].reduce((a,b) => a+b);

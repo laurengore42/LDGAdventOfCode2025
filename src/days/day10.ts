@@ -6,9 +6,89 @@ export class day10 {
     let inputArray = input.split(';');
     inputArray = testInput.split(';');
 
-    result += 'Result: ';
-    result += inputArray;
-    result += '<br />';
+    for (let i = 0; i < inputArray.length; i++) {
+      const machine = inputArray[i];
+      const parts = machine.split(' ');
+
+      let lightsTarget = parts[0].replaceAll('[','').replaceAll(']','').replaceAll('.','0').replaceAll('#','1');
+      result += '<br />';
+      result += 'Target: ';
+      result += lightsTarget;
+
+      let lightsBitwiseTarget = 0;
+      let lights = lightsTarget.split('');
+      for (let i = lightsTarget.length - 1; i >= 0; i = i - 1) {
+        console.log('add ' + Math.pow(2,lightsTarget.length - (1 + i)) * parseInt(lights[i]));
+        lightsBitwiseTarget += Math.pow(2,lightsTarget.length - (1 + i)) * parseInt(lights[i]);
+      }
+        console.log('done');
+      result += ' is ';
+      result += lightsBitwiseTarget;
+      result += '<br />';
+      
+      let buttons = parts.slice(1, -1).map(p => p.replaceAll('(','').replaceAll(')','').split(',').map(b => Math.pow(2,(lightsTarget.length - (1 + parseInt(b))))).reduce((a,b) => a+b));
+      result += 'Buttons: ';
+      result += buttons.map(b => b.toString(2).padStart(lightsTarget.length,'0')).join(', ');
+      result += '<br />';
+
+      let stopLooking = false;
+
+      for (let i = 0; i < buttons.length; i++) {
+        if (buttons[i] === lightsBitwiseTarget) {
+          result += 'Got it in one: ' + i ;
+          result += '<br />';
+          result += '<br />';
+          stopLooking = true;
+          break;
+        }
+      }
+
+      if (stopLooking) {
+        continue;
+      }
+
+      for (let i = 0; i < buttons.length; i++) {
+        for (let j = i+1; j < buttons.length; j++) {
+          let bitwiseAdd = buttons[i] ^ buttons[j];
+          if (bitwiseAdd === lightsBitwiseTarget) {
+            result += 'Got it in two: ' + buttons[i].toString(2).padStart(lightsTarget.length,'0') + ' and ' + buttons[j].toString(2).padStart(lightsTarget.length,'0');
+            result += '<br />';
+            stopLooking = true;
+            break;
+          }
+        }
+        if (stopLooking) {
+          break;
+        }
+      }
+
+      if (stopLooking) {
+        continue;
+      }
+
+      for (let i = 0; i < buttons.length; i++) {
+        for (let j = i+1; j < buttons.length; j++) {
+          for (let k = j+1; k < buttons.length; k++) {
+            let bitwiseAdd = (buttons[i] ^ buttons[j]) ^ buttons[k];
+            if (i == 2 && j == 3 && k == 4) {
+              console.log('hi ' + bitwiseAdd);
+            }
+            if (bitwiseAdd === lightsBitwiseTarget) {
+              result += 'Got it in three: ' + buttons[i].toString(2).padStart(lightsTarget.length,'0') + ' and ' + buttons[j].toString(2).padStart(lightsTarget.length,'0') + ' and ' + buttons[k].toString(2).padStart(lightsTarget.length,'0');
+              result += '<br />';
+              stopLooking = true;
+              break;
+            }
+          }
+          if (stopLooking) {
+            break;
+          }
+        }
+        if (stopLooking) {
+          break;
+        }
+      }
+    }
     
     document.writeln(result);
     console.log('Printed day 10');

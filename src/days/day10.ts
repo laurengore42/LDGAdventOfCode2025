@@ -6,88 +6,99 @@ export class day10 {
     let inputArray = input.split(';');
     inputArray = testInput.split(';');
 
+    let currentSum = 0;
     for (let i = 0; i < inputArray.length; i++) {
       const machine = inputArray[i];
       const parts = machine.split(' ');
 
       let lightsTarget = parts[0].replaceAll('[','').replaceAll(']','').replaceAll('.','0').replaceAll('#','1');
-      result += '<br />';
-      result += 'Target: ';
-      result += lightsTarget;
+      // result += '<br />';
+      // result += 'Target: ';
+      // result += lightsTarget;
 
       let lightsBitwiseTarget = 0;
       let lights = lightsTarget.split('');
       for (let i = lightsTarget.length - 1; i >= 0; i = i - 1) {
-        console.log('add ' + Math.pow(2,lightsTarget.length - (1 + i)) * parseInt(lights[i]));
         lightsBitwiseTarget += Math.pow(2,lightsTarget.length - (1 + i)) * parseInt(lights[i]);
       }
-        console.log('done');
-      result += ' is ';
-      result += lightsBitwiseTarget;
-      result += '<br />';
+      // result += ' is ';
+      // result += lightsBitwiseTarget;
+      // result += '<br />';
       
       let buttons = parts.slice(1, -1).map(p => p.replaceAll('(','').replaceAll(')','').split(',').map(b => Math.pow(2,(lightsTarget.length - (1 + parseInt(b))))).reduce((a,b) => a+b));
-      result += 'Buttons: ';
-      result += buttons.map(b => b.toString(2).padStart(lightsTarget.length,'0')).join(', ');
-      result += '<br />';
+      // result += 'Buttons: ';
+      // result += buttons.map(b => b.toString(2).padStart(lightsTarget.length,'0')).join(', ');
+      // result += '<br />';
 
-      let stopLooking = false;
-
-      for (let i = 0; i < buttons.length; i++) {
-        if (buttons[i] === lightsBitwiseTarget) {
-          result += 'Got it in one: ' + i ;
-          result += '<br />';
-          result += '<br />';
-          stopLooking = true;
-          break;
-        }
-      }
-
-      if (stopLooking) {
-        continue;
-      }
-
-      for (let i = 0; i < buttons.length; i++) {
-        for (let j = i+1; j < buttons.length; j++) {
-          let bitwiseAdd = buttons[i] ^ buttons[j];
-          if (bitwiseAdd === lightsBitwiseTarget) {
-            result += 'Got it in two: ' + buttons[i].toString(2).padStart(lightsTarget.length,'0') + ' and ' + buttons[j].toString(2).padStart(lightsTarget.length,'0');
-            result += '<br />';
-            stopLooking = true;
+      let currentValues: number[] = [0];
+      for (let numberOfButtonsUsed = 1; numberOfButtonsUsed < buttons.length; numberOfButtonsUsed++) {
+        if (currentValues.length == 0) {
+          currentValues = buttons;
+          if (currentValues.indexOf(lightsBitwiseTarget) > -1) {
+            // result += 'found ' + lightsBitwiseTarget + ' at ' + numberOfButtonsUsed + ' button';
+            // result += '<br />';
+            currentSum += numberOfButtonsUsed;
             break;
           }
         }
-        if (stopLooking) {
-          break;
-        }
-      }
-
-      if (stopLooking) {
-        continue;
-      }
-
-      for (let i = 0; i < buttons.length; i++) {
-        for (let j = i+1; j < buttons.length; j++) {
-          for (let k = j+1; k < buttons.length; k++) {
-            let bitwiseAdd = (buttons[i] ^ buttons[j]) ^ buttons[k];
-            if (i == 2 && j == 3 && k == 4) {
-              console.log('hi ' + bitwiseAdd);
-            }
-            if (bitwiseAdd === lightsBitwiseTarget) {
-              result += 'Got it in three: ' + buttons[i].toString(2).padStart(lightsTarget.length,'0') + ' and ' + buttons[j].toString(2).padStart(lightsTarget.length,'0') + ' and ' + buttons[k].toString(2).padStart(lightsTarget.length,'0');
-              result += '<br />';
-              stopLooking = true;
-              break;
+        else {
+          let newCurrentValues: number[] = [];
+          for (let i = 0; i < currentValues.length; i++) {
+            for (let j = 0; j < buttons.length; j++) {
+              newCurrentValues.push(currentValues[i] ^ buttons[j]);
             }
           }
-          if (stopLooking) {
+          if (newCurrentValues.indexOf(lightsBitwiseTarget) > -1) {
+            // result += 'found ' + lightsBitwiseTarget + ' at ' + numberOfButtonsUsed + ' buttons';
+            // result += '<br />';
+            currentSum += numberOfButtonsUsed;
             break;
           }
-        }
-        if (stopLooking) {
-          break;
+          else {
+            currentValues = newCurrentValues;
+          }
         }
       }
+    }
+
+    result += 'Button pushes: ' + currentSum;
+    result += '<br />';
+
+    let newSum = 0;
+    for (let i = 0; i < inputArray.length; i++) {
+      const machine = inputArray[i];
+      const parts = machine.split(' ');
+
+      let joltageTarget = parts[parts.length - 1].replaceAll('{','').replaceAll('}','').split(',').map(t => parseInt(t));
+
+      // first machine: 3 5 4 7, options 3, 1 3, 2, 2 3, 0 2, 0 1
+      // we need 3 of: 0 2, 0 1
+      // we need 5 of: 0 1, 1 3
+      // we need 4 of: 0 2, 2, 2 3
+      // we need 7 of: 1 3, 3, 2 3
+      // first button is in [7]
+      // second button is in [5 7]
+      // third button is in [4]
+      // fourth button is in [4 7]
+      // fifth button is in [3 4]
+      // sixth button is in [3 5]
+      // goal is to minimise the total
+      // a + b + d = 7
+      // b + f = 5
+      // e + f = 3
+      // c + d + e = 4
+      // min a + b + c + d + e + f
+      // the total can't be less than 7 because a small part of it is 7
+      // a <= 7, 2 <= b <= 5, c <= 4, d <= 4, e <= 3, f <= 3
+      // a possible minimum state is a 1, b 3, c 0, d 3, e 1, f 2 = 10
+
+
+      // real machine: [##.#] (0,1,3) (1,2,3) (0) (0,2) {25,22,8,22}
+      // we need 25 of: 0 1 3, 0, 0 2
+      // we need 22 of: 0 1 3, 1 2 3
+      // we need 8 of: 0 2
+      // we need 22 of: 0 1 3, 1 2 3
+      // so 0 2 is 8, 0 1 3 is 17, 1 2 3 is 5, 0 is 0. total is 31
     }
     
     document.writeln(result);

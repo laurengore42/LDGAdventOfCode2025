@@ -73,11 +73,76 @@ export class day10 {
         result += '<br />';
       }
       result += '</pre>';
-      result += '<br />';
-      result += '<br />';
     }
 
-    let newSum = 0;
+    const putMatrixIntoRref = (augmentedMatrix: number[][]) => {      
+      // row swaps
+
+      augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
+      printMatrix(augmentedMatrix);
+
+      // reduce by columns
+
+      for (let columnIndex = 0; columnIndex < augmentedMatrix[0].length - 1; columnIndex++) {
+        let pivotingIndex = -1;
+        let targetRowIndices: number[] = [];
+        for (let j = 0; j < augmentedMatrix.length; j++) {
+          if (augmentedMatrix[j][columnIndex] !== 0) {
+            result += j + ',' + columnIndex + ' isn\'t zero';
+            result += '<br />';
+            targetRowIndices.push(j);
+            if (pivotingIndex == -1 && (columnIndex == 0 || augmentedMatrix[j].slice(0, columnIndex).filter(t => t !== 0).length == 0)) {
+              pivotingIndex = j;
+            }
+          }
+        }
+        
+        if (pivotingIndex > -1 && augmentedMatrix[pivotingIndex][columnIndex] < 0) {
+          result += 'flip row ' + pivotingIndex;
+          result += '<br />';
+          for (let k = 0; k < augmentedMatrix[pivotingIndex].length; k++) {
+            augmentedMatrix[pivotingIndex][k] = 0 - augmentedMatrix[pivotingIndex][k];
+          }
+        }
+        if (pivotingIndex > -1 && augmentedMatrix[pivotingIndex][columnIndex] > 1) {
+          result += 'divide row ' + pivotingIndex;
+          result += '<br />';
+          for (let k = 0; k < augmentedMatrix[pivotingIndex].length; k++) {
+            augmentedMatrix[pivotingIndex][k] = augmentedMatrix[pivotingIndex][k] / augmentedMatrix[pivotingIndex][columnIndex];
+          }
+        }
+        
+        for (let j = 0; j < augmentedMatrix.length; j++) {
+          if (targetRowIndices.indexOf(j) > -1 && pivotingIndex != -1 && pivotingIndex != j) {
+            if (augmentedMatrix[j][columnIndex] == augmentedMatrix[pivotingIndex][columnIndex]) {
+              result += 'for row ' + j + ', subtract row ' + pivotingIndex;
+              result += '<br />';
+              for (let k = 0; k < augmentedMatrix[j].length; k++) {
+                augmentedMatrix[j][k] = augmentedMatrix[j][k] - augmentedMatrix[pivotingIndex][k];
+              }
+            }
+            else {
+              result += 'for row ' + j + ', add row ' + pivotingIndex;
+              result += '<br />';
+              for (let k = 0; k < augmentedMatrix[j].length; k++) {
+                augmentedMatrix[j][k] = augmentedMatrix[j][k] + augmentedMatrix[pivotingIndex][k];
+              }
+            }
+          }
+        }
+
+        result += 'next column';        
+        result += '<br />';
+        augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
+        printMatrix(augmentedMatrix);
+      }
+      
+      // row swaps
+
+      augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
+      //printMatrix(augmentedMatrix);
+    }
+
     for (let i = 0; i < inputArray.length; i++) {
       const machine = inputArray[i];
       const parts = machine.split(' ');
@@ -99,51 +164,13 @@ export class day10 {
       }
       printMatrix(augmentedMatrix);
 
-      // we need to transform it to RREF
+      putMatrixIntoRref(augmentedMatrix);
 
-      // row swaps
-
-      augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
       printMatrix(augmentedMatrix);
 
-      // reduce by columns
-
-      for (let columnIndex = 0; columnIndex < augmentedMatrix[0].length - 1; columnIndex++) {
-        let smallestTarget = 999999999;
-        let smallestTargetIndex = -1;
-        let targetRowIndices: number[] = [];
-        for (let j = 0; j < augmentedMatrix.length; j++) {
-          if (augmentedMatrix[j][columnIndex] !== 0) {
-            result += j + ',' + columnIndex + ' isn\'t zero';
-            result += '<br />';
-            if (Math.abs(augmentedMatrix[j][augmentedMatrix[0].length - 1]) < Math.abs(smallestTarget)) {
-              smallestTarget = augmentedMatrix[j][augmentedMatrix[0].length - 1];
-              smallestTargetIndex = j;
-            }
-            targetRowIndices.push(j);
-          }
-        }
-        for (let j = 0; j < augmentedMatrix.length; j++) {
-          if (targetRowIndices.indexOf(j) > -1 && j != smallestTargetIndex) {
-              result += 'subtract row ' + smallestTargetIndex + ' from row ' + j;
-              result += '<br />';
-            for (let k = 0; k < augmentedMatrix[j].length; k++) {
-              augmentedMatrix[j][k] = augmentedMatrix[j][k] - augmentedMatrix[smallestTargetIndex][k];
-            }
-          }
-        }
-        result += 'next column';        
-        result += '<br />';
-        printMatrix(augmentedMatrix);
-      }
-      
-
-      // row swaps
-
-      augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
-      printMatrix(augmentedMatrix);
-      
-      result += 'next one';
+      result += '<br />';
+      result += '<br />';
+      result += 'next matrix';
       result += '<br />';
       result += '<br />';
 

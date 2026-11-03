@@ -63,6 +63,19 @@ export class day10 {
 
     result += 'Button pushes: ' + currentSum;
     result += '<br />';
+    result += '<br />';
+
+    const printMatrix = (matrix: number[][]) => {
+      result += '<pre style="font-family:monospace;">';
+      for (let i = 0; i < matrix.length; i++) {
+        const matrixRow = matrix[i];
+        result += matrixRow.map(t => t.toString().padStart(3, ' ')).join('');
+        result += '<br />';
+      }
+      result += '</pre>';
+      result += '<br />';
+      result += '<br />';
+    }
 
     let newSum = 0;
     for (let i = 0; i < inputArray.length; i++) {
@@ -70,6 +83,70 @@ export class day10 {
       const parts = machine.split(' ');
 
       let joltageTarget = parts[parts.length - 1].replaceAll('{','').replaceAll('}','').split(',').map(t => parseInt(t));
+      let availableButtons = parts.slice(1, parts.length - 1).map(p => p.replaceAll('(','').replaceAll(')','').split(',').map(pt => parseInt(pt)));
+
+      result += '<div style="font-family:monospace;">';
+      let augmentedMatrix: number[][] = [];
+      for (let j = 0; j < joltageTarget.length; j++) {
+        let matrixRow = new Array(availableButtons.length).fill(0);
+        for (let k = 0; k < matrixRow.length; k++) {
+          if (availableButtons[k].indexOf(j) > -1) {
+            matrixRow[k] = 1;
+          }
+        }
+        matrixRow.push(joltageTarget[j]);
+        augmentedMatrix.push(matrixRow);
+      }
+      printMatrix(augmentedMatrix);
+
+      // we need to transform it to RREF
+
+      // row swaps
+
+      augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
+      printMatrix(augmentedMatrix);
+
+      // reduce by columns
+
+      for (let columnIndex = 0; columnIndex < augmentedMatrix[0].length - 1; columnIndex++) {
+        let smallestTarget = 999999999;
+        let smallestTargetIndex = -1;
+        let targetRowIndices: number[] = [];
+        for (let j = 0; j < augmentedMatrix.length; j++) {
+          if (augmentedMatrix[j][columnIndex] !== 0) {
+            result += j + ',' + columnIndex + ' isn\'t zero';
+            result += '<br />';
+            if (Math.abs(augmentedMatrix[j][augmentedMatrix[0].length - 1]) < Math.abs(smallestTarget)) {
+              smallestTarget = augmentedMatrix[j][augmentedMatrix[0].length - 1];
+              smallestTargetIndex = j;
+            }
+            targetRowIndices.push(j);
+          }
+        }
+        for (let j = 0; j < augmentedMatrix.length; j++) {
+          if (targetRowIndices.indexOf(j) > -1 && j != smallestTargetIndex) {
+              result += 'subtract row ' + smallestTargetIndex + ' from row ' + j;
+              result += '<br />';
+            for (let k = 0; k < augmentedMatrix[j].length; k++) {
+              augmentedMatrix[j][k] = augmentedMatrix[j][k] - augmentedMatrix[smallestTargetIndex][k];
+            }
+          }
+        }
+        result += 'next column';        
+        result += '<br />';
+        printMatrix(augmentedMatrix);
+      }
+      
+
+      // row swaps
+
+      augmentedMatrix = augmentedMatrix.sort((a,b) => b.join('').localeCompare(a.join('')));
+      printMatrix(augmentedMatrix);
+      
+      result += 'next one';
+      result += '<br />';
+      result += '<br />';
+
 
       // first machine: 3 5 4 7, options 3, 1 3, 2, 2 3, 0 2, 0 1
       // we need 3 of: 0 2, 0 1
@@ -88,9 +165,96 @@ export class day10 {
       // e + f = 3
       // c + d + e = 4
       // min a + b + c + d + e + f
-      // the total can't be less than 7 because a small part of it is 7
-      // a <= 7, 2 <= b <= 5, c <= 4, d <= 4, e <= 3, f <= 3
-      // a possible minimum state is a 1, b 3, c 0, d 3, e 1, f 2 = 10
+      // linear alg:
+      // reduce by substitution
+      // we find that
+      // f = 3 -e (eq 3)
+      // f = 5 -b (eq 2)
+      // e = -2 +b (eq 2 and 3)
+      // d = 6 -b -c (eq 2 3 and 4)
+      // c = -1 +a (eq 1 2 3 and 4)
+      // e = 5 -d -a (eq 1 2 and 3) equivalently d = 7 -a -b
+      // which seems to imply a and b are independent
+      // all values are natural numbers inc. 0 so b <= 5, a >= 1
+      // if a 1 b 5, then c 0, d 1, e 3, f 0. total button presses 10
+      // is there any way to show that's an actual minimum?
+      // c = a - 1
+      // d = 7 - (b + a)
+      // e = b - 2
+      // f = 5 - b
+      // total sum then collapses to x = a + 9 so it increases linearly with a and the minimum value of a is 1
+      // the other values don't impact the final outcome but do impact what possible values of a there are
+      // if b is 3 then the outcome is 1 3 0 3 1 2
+      // if b is 5 then the outcome is 1 5 0 1 3 0
+      // they both add up to ten button presses, possible values of b are 2 3 4 5
+      // this is all very well but how the hell do you program it?
+
+      // seen as a matrix:          
+      // 1 1 0 1 0 0  a  =  7
+      // 0 1 0 0 0 1  b     5
+      // 0 0 0 0 1 1  c     3
+      // 0 0 1 1 1 0  d     4
+      //              e     
+      //              f     
+      // 
+      // given Ax = y, then A^-1y = x
+      // unfortunately it's got too many zeroes in it to be invertible
+      // which makes sense because we know there isn't a single solution
+      // i.e. it's not a function
+      // I know there's a way to get 'a > 1' out of this but how
+
+      // return to the original specifications
+      // a + b + d = 7
+      // b + f = 5
+      // e + f = 3
+      // c + d + e = 4
+      // min a + b + c + d + e + f
+      // by eye, this reduces to a + 4 + 5
+      // we can't rely on that, surely
+
+      // consider the next one
+      // a + c + d = 7
+      // d + e = 5
+      // a + b + d + e = 12
+      // a + b + e = 7
+      // a + c + e = 2
+      // well for a start, d = 5, e = 0, b = c+5, a = 2-c
+      // min a + b + c + d + e = min 2-c + c+5 + c + 5 = min c + 12
+      // c -> 0, a -> 2, b -> 5
+
+      // consider the next one
+      // a + b + c = 10
+      // a + c + d = 11
+      // a + c + d = 11
+      // a + b = 5
+      // a + b + c = 10
+      // c = 5
+      // so fairly quickly this gives c = 5, b = 5-a, d = 6-a
+      // min a + b + c + d = min a + 5-a + 5 + 6-a = min 16-a where a <= 5, min is 11
+      // a -> 5, b -> 0, c -> 5, d -> 1
+
+      // I don't know how to code this either!
+
+      // real input example
+      // [######...#] (0,3,4,8,9) (0,2,4,6,9) (0,1,2,3,4,5,8,9) (0,1,2,3,5,6,8,9) (2,6,8,9) (0,4,6,7,9) (0,2,4,5,6,7,8) (1,2,5,6,7) (0,1,2,3,8) (0,1,4,5,9) (0,1,2,3,4,5,6,7) {101,92,115,64,73,85,95,42,70,91}
+
+      // a + b + c + d + f + g + i + j + k = 101
+      // c + d + h + i + j + k = 92
+      // b + c + d + e + g + h + i + k = 115
+      // a + c + d + i + k = 64
+      // a + b + c + f + g + j + k = 73
+      // c + d + g + h + j + k = 85
+      // b + d + e + f + g + h + k = 95
+      // f + g + h + k = 42
+      // a + c + d + e + g + i = 70
+      // a + b + c + d + e + f + j = 91
+
+      // it solves out nicely in Nerdamer to {a => 45-2*e, b => 35-e, c => -6+e, d => 18, f => -16+e, g => 3, h => 58-2*e, j => 15, k => -3+e, i => 10, e => e}
+      // so the sum of all is
+      // 45 + -2e + 35 + -e + -6 + e + 18 + -16 + e + 3 + 58 + -2e + 15 + -3 + e + 10 + e
+      // 165 - e
+      // we want the lowest value, and the largest e we can get is 22
+      // minimum button presses: 143
 
 
       // real machine: [##.#] (0,1,3) (1,2,3) (0) (0,2) {25,22,8,22}
@@ -99,6 +263,179 @@ export class day10 {
       // we need 8 of: 0 2
       // we need 22 of: 0 1 3, 1 2 3
       // so 0 2 is 8, 0 1 3 is 17, 1 2 3 is 5, 0 is 0. total is 31
+
+      // returning to the matrix idea because I think there's got to be something in that
+      
+      // 1 1 0 1 0 0  a  =  7
+      // 0 1 0 0 0 1  b     5
+      // 0 0 0 0 1 1  c     3
+      // 0 0 1 1 1 0  d     4
+      //              e     
+      //              f     
+
+      // we notice that a and d only appear in one equation each (column sum = 1)
+      // in theory we can do row operations at it
+      // in practice six variables is a lot of variables
+      // let's just do row swaps first
+      
+      // 1 1 0 1 0 0  a  =  7
+      // 0 1 0 0 0 1  b     5
+      // 0 0 1 1 1 0  c     4
+      // 0 0 0 0 1 1  d     3
+      //              e     
+      //              f     
+
+      // that is row echelon form but it is not reduced row echelon form
+      // to get to reduced row echelon form we need to do some subtractions
+      
+      // 1  0  0  1  0 -1  a  =  2
+      // 0  1  0  0  0  1  b     5
+      // 0  0  1  1  1  0  c     4
+      // 0  0  0  0  1  1  d     3
+      //                   e     
+      //                   f       
+      
+      // 1  0  0  1  0 -1  a  =  2
+      // 0  1  0  0  0  1  b     5
+      // 0  0  1  1  0 -1  c     1
+      // 0  0  0  0  1  1  d     3
+      //                   e     
+      //                   f       
+
+      // having the matrix in RREF we can express it as equations:
+      // a = 2 + f - d
+      // b = 5 - f
+      // c = 1 + f - d
+      // e = 3 - f
+
+      // this is the canonical form of this system
+      // and counts as a solution to it
+      // i.e. if d = 0 and f = 0 then a = 2, b = 5, c = 1, e = 3
+      // to find the answer we want for the puzzle
+      // we add up every term in the system so
+      // 2 + f - d + 5 - f + 1 + f - d + d + 3 - f + f
+      // simplifies to
+      // 10 + f - d
+      // which is at its smallest when d = 0, f = 0
+      // and 10 is the right answer
+      
+      // consider the next one
+      // a + c + d = 7
+      // d + e = 5
+      // a + b + d + e = 12
+      // a + b + e = 7
+      // a + c + e = 2
+
+      // 1   0   1   1   0    7
+      // 0   0   0   1   1    5
+      // 1   1   0   1   1   12
+      // 1   1   0   0   1    7
+      // 1   0   1   0   1    2
+
+      // 1   0   1   1   0    7
+      // 1   1   0   0   1    7
+      // 1   1   0   1   1   12
+      // 1   0   1   0   1    2
+      // 0   0   0   1   1    5
+
+      // 1   1   0   0   1    7
+      // 1   1   0   1   1   12
+      // 1   0   1   0   1    2
+      // 0   0   0   1   1    5
+      // 0   0   0   1  -1    5
+
+      // 1   1   0   0   1    7
+      // 1   1   0   1   1   12
+      // 1   0   1   0   1    2
+      // 0   0   0   1   1    5
+      // 0   0   0   1   0    5
+
+      // 1   1   0   0   1    7
+      // 1   1   0   1   1   12
+      // 1   0   1   0   1    2
+      // 0   0   0   1   0    5
+      // 0   0   0   0   1    0
+
+      // 1   1   0   0   1    7
+      // 1   0   1   0   1    2
+      // 0   0   0   1   0    5
+      // 0   0   0   0   1    0
+
+      // 1   0   1   0   1    2
+      // 0   1  -1   0   0    5
+      // 0   0   0   1   0    5
+      // 0   0   0   0   1    0
+
+      // 1   0   1   0   0    2
+      // 0   1  -1   0   0    5
+      // 0   0   0   1   0    5
+      // 0   0   0   0   1    0
+
+      // a = 2 - c
+      // b = 5 + c
+      // d = 5
+      // e = 0
+
+      // 2 - c + 5 + c + c + 5 + 0
+      // 12 + c
+      // and 12 is the right answer
+
+      // real input example
+      // [######...#] (0,3,4,8,9) (0,2,4,6,9) (0,1,2,3,4,5,8,9) (0,1,2,3,5,6,8,9) (2,6,8,9) (0,4,6,7,9) (0,2,4,5,6,7,8) (1,2,5,6,7) (0,1,2,3,8) (0,1,4,5,9) (0,1,2,3,4,5,6,7) {101,92,115,64,73,85,95,42,70,91}
+
+      // read it off "yes" or "no" for is this index marked on this button
+      // 1 1 1 1 0 1 1 0 1 1 1 101
+      // 0 0 1 1 0 0 0 1 1 1 1  92
+      // 0 1 1 1 1 0 1 1 1 0 1 115
+      // 1 0 1 1 0 0 0 0 1 0 1  64
+      // 1 1 1 0 0 1 1 0 0 1 1  73
+      // 0 0 1 1 0 0 1 1 0 1 1  85
+      // 0 1 0 1 1 1 1 1 0 0 1  95
+      // 0 0 0 0 0 1 1 1 0 0 1  42
+      // 1 0 1 1 1 0 1 0 1 0 0  70
+      // 1 1 1 1 1 1 0 0 0 1 0  91
+      
+      // swaps
+      // 1 1 1 1 0 1 1 0 1 1 1 101
+      // 1 1 1 0 0 1 1 0 0 1 1  73
+      // 1 1 1 1 1 1 0 0 0 1 0  91
+      // 1 0 1 1 0 0 0 0 1 0 1  64
+      // 1 0 1 1 1 0 1 0 1 0 0  70
+      // 0 1 0 1 1 1 1 1 0 0 1  95
+      // 0 1 1 1 1 0 1 1 1 0 1 115
+      // 0 0 1 1 0 0 0 1 1 1 1  92
+      // 0 0 1 1 0 0 1 1 0 1 1  85
+      // 0 0 0 0 0 1 1 1 0 0 1  42
+
+      // reduce for a
+      // 1 0 1 1 0 0 0 0 1 0 1  64
+      // 0 1 0 0 0 1 1 0 0 1 0  35
+      // 0 1 0 - 0 1 1 0 - 1 0   9
+      // 0 1 0 0 1 1 0 0 - 1 -  25
+      // 0 1 0 1 1 1 1 1 0 0 1  95
+      // 0 1 1 1 1 0 1 1 1 0 1 115
+      // 0 0 1 1 0 0 0 1 1 1 1  92
+      // 0 0 1 1 0 0 1 1 0 1 1  85
+      // 0 0 0 0 1 0 1 0 0 0 -   6
+      // 0 0 0 0 0 1 1 1 0 0 1  42
+
+      // reduce for b
+      // 1 0 1 1 0 0 0 0 1 0 1  64
+      // 0 1 0 - 0 1 1 0 - 1 0   9
+      // 0 0 1 2 1 - 0 1 2 - 1 106
+      // 0 0 0 2 1 0 0 1 1 - 1  86
+      // 0 0 0 1 0 0 0 0 1 0 0  26
+      // 0 0 0 1 1 0 - 0 0 0 -  16
+      // 0 0 1 1 0 0 0 1 1 1 1  92
+      // 0 0 1 1 0 0 1 1 0 1 1  85
+      // 0 0 0 0 1 0 1 0 0 0 -   6
+      // 0 0 0 0 0 1 1 1 0 0 1  42
+
+      // this develops a technique: pick the row with a 1 in the target column, 
+      // with the smallest value in the far right column
+      // then subtract that row from all the other rows with a 1 in the target column
+
+      // having got as far as that I think we can start writing code
     }
     
     document.writeln(result);

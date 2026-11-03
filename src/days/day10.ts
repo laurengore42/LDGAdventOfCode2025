@@ -205,9 +205,10 @@ export class day10 {
         matrixRow.push(joltageTarget[j]);
         augmentedMatrix.push(matrixRow);
       }
-      let printAll = true;
 
-      if (printAll) {
+      let printAll = false;
+
+      if (true) {
         printMatrix(augmentedMatrix);
       }
 
@@ -215,10 +216,48 @@ export class day10 {
 
       reduceMatrix(augmentedMatrix, printAll);
       
-      if (printAll) {
+      if (true) {
         printMatrix(augmentedMatrix);
       }
 
+      let alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+      let variables = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+      for (let rowIndex = 0; rowIndex < augmentedMatrix.length; rowIndex++) {
+        let pivotValue = -1;
+        let rowTotal = '';
+        for (let columnIndex = 0; columnIndex < augmentedMatrix[0].length - 1; columnIndex++) {
+          let cellValue = augmentedMatrix[rowIndex][columnIndex];
+          if (cellValue == 0) {
+            continue;
+          }
+          else {
+            if (pivotValue == -1) {
+              pivotValue = columnIndex;
+              continue;
+            }
+          }
+          if (cellValue == 1) {
+            rowTotal += ' - ' + alphabet[columnIndex];
+          }
+          else if (cellValue > 0) {
+            rowTotal += ' - ' + cellValue.toString() + alphabet[columnIndex];
+          }
+          else if (cellValue == -1) {
+            rowTotal += ' + ' + alphabet[columnIndex];
+          }
+          else {
+            rowTotal += ' + ' + (0 - cellValue).toString() + alphabet[columnIndex];
+          }
+        }
+        let cellValue = augmentedMatrix[rowIndex][augmentedMatrix[0].length - 1];
+        rowTotal += ' + ' + cellValue;
+        variables[pivotValue] = rowTotal;
+      }
+
+      result += '<br />';
+      result += 'sum = ' + variables.slice(0, augmentedMatrix[0].length - 1).join(' + ');
+      result += '<br />';
+      result += '<br />';
       result += '<br />';
       result += 'next matrix';
       result += '<br />';

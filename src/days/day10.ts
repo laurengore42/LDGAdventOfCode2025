@@ -69,7 +69,7 @@ export class day10 {
       result += '<pre style="font-family:monospace;">';
       for (let i = 0; i < matrix.length; i++) {
         const matrixRow = matrix[i];
-        result += matrixRow.map(t => t.toString().padStart(3, ' ')).join('');
+        result += matrixRow.map(t => t.toString().padStart(4, ' ')).join('');
         result += '<br />';
       }
       result += '</pre>';
@@ -82,7 +82,7 @@ export class day10 {
       printMatrix(matrix);
     }
 
-    const putMatrixIntoRref = (augmentedMatrix: number[][]) => {      
+    const putMatrixIntoRowEchelonForm = (augmentedMatrix: number[][]) => {      
       // row swaps
 
       sortMatrixRows(augmentedMatrix);
@@ -111,10 +111,14 @@ export class day10 {
           }
         }
         if (pivotingIndex > -1 && augmentedMatrix[pivotingIndex][columnIndex] > 1) {
-          result += 'divide row ' + pivotingIndex;
+          result += 'divide row ' + pivotingIndex + '... by multiplying everything else';
           result += '<br />';
-          for (let k = 0; k < augmentedMatrix[pivotingIndex].length; k++) {
-            augmentedMatrix[pivotingIndex][k] = augmentedMatrix[pivotingIndex][k] / augmentedMatrix[pivotingIndex][columnIndex];
+          for (let rowIndex = 0; rowIndex < augmentedMatrix.length; rowIndex++) {
+            if (rowIndex != pivotingIndex) {
+              for (let k = 0; k < augmentedMatrix[pivotingIndex].length; k++) {
+                augmentedMatrix[rowIndex][k] = augmentedMatrix[rowIndex][k] * augmentedMatrix[pivotingIndex][columnIndex];
+              }
+            }
           }
         }
         
@@ -147,9 +151,22 @@ export class day10 {
           printMatrix(augmentedMatrix);
           sortMatrixRows(augmentedMatrix);
         }
-
-        //result += 'next column';        
-        //result += '<br />';
+      }
+    }
+    
+    const reduceMatrix = (augmentedMatrix: number[][]) => {  
+      result += 'reduce rows';
+      result += '<br />';  
+      for (let i = 0; i < augmentedMatrix.length; i++) {
+        let factor = 1;
+        for (let j = 0; j < augmentedMatrix[0].length; j++) {
+          if (factor == 1 && augmentedMatrix[i][j] > 1) {
+            factor = augmentedMatrix[i][j];
+          }
+        }
+        for (let j = 0; j < augmentedMatrix[0].length; j++) {
+          augmentedMatrix[i][j] = augmentedMatrix[i][j] / factor;
+        }
       }
     }
 
@@ -174,7 +191,10 @@ export class day10 {
       }
       printMatrix(augmentedMatrix);
 
-      putMatrixIntoRref(augmentedMatrix);
+      putMatrixIntoRowEchelonForm(augmentedMatrix);
+
+      reduceMatrix(augmentedMatrix);
+      printMatrix(augmentedMatrix);
 
       result += '<br />';
       result += 'next matrix';

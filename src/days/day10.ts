@@ -254,8 +254,14 @@ export class day10 {
         variables[pivotValue] = rowTotal;
       }
 
+      variables = variables.slice(0, augmentedMatrix[0].length - 1);
+      for (let varIndex = 0; varIndex < variables.length; varIndex++) {
+        result += alphabet[varIndex] + ' = ' + variables[varIndex] ;
+        result += '<br />';
+      }
+
       result += '<br />';
-      result += 'sum = ' + variables.slice(0, augmentedMatrix[0].length - 1).join(' + ');
+      result += 'sum = ' + variables.join(' + ');
       result += '<br />';
       result += '<br />';
       result += '<br />';

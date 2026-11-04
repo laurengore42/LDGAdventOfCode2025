@@ -186,14 +186,82 @@ export class day10 {
       }
     }
 
-    for (let i = 0; i < inputArray.length; i++) {
-      const machine = inputArray[i];
+    const convertMatrixToSystemOfEquations = (augmentedMatrix: number[][]) => {
+      let alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+      let variables = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+      let variableConsts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+      for (let rowIndex = 0; rowIndex < augmentedMatrix.length; rowIndex++) {
+        let pivotValue = -1;
+        let rowTotal = '';
+        for (let columnIndex = 0; columnIndex < augmentedMatrix[0].length - 1; columnIndex++) {
+          let cellValue = augmentedMatrix[rowIndex][columnIndex];
+          if (cellValue == 0) {
+            continue;
+          }
+          else {
+            if (pivotValue == -1) {
+              pivotValue = columnIndex;
+              continue;
+            }
+          }
+          if (cellValue == 1) {
+            rowTotal += ' + -' + alphabet[columnIndex];
+          }
+          else if (cellValue > 0) {
+            rowTotal += ' + -' + cellValue.toString() + alphabet[columnIndex];
+          }
+          else if (cellValue == -1) {
+            rowTotal += ' + ' + alphabet[columnIndex];
+          }
+          else {
+            rowTotal += ' + ' + (0 - cellValue).toString() + alphabet[columnIndex];
+          }
+        }
+        let cellValue = augmentedMatrix[rowIndex][augmentedMatrix[0].length - 1];
+        variableConsts[pivotValue] = cellValue;
+        variables[pivotValue] = rowTotal;
+      }
+
+      variables = variables.slice(0, augmentedMatrix[0].length - 1);
+      for (let varIndex = 0; varIndex < variables.length; varIndex++) {
+        if (variables[varIndex] == alphabet[varIndex]) {
+          result += alphabet[varIndex] + ' = ' + variables[varIndex];
+        }
+        else {
+          result += alphabet[varIndex] + ' = ' + variableConsts[varIndex] + variables[varIndex];
+        }
+        result += '<br />';
+      }
+
+      result += '<br />';
+      variables = variables.join(' + ').split(' + ').map(v => v.trim()).filter(v => v.length > 0);
+      var keepGoing = true;
+      while (keepGoing) {
+        keepGoing = false;
+        for (let i = 0; i < alphabet.length; i++) {
+          const letter = alphabet[i];
+          if (variables.indexOf(letter) > -1 && variables.indexOf("-" + letter) > -1) {
+            variables = variables.splice(variables.indexOf(letter),1);
+            variables = variables.splice(variables.indexOf("-" + letter),1);
+            keepGoing = true;
+          }
+        }
+      }
+      result += 'sum = ' + variableConsts.reduce((a,b) => a+b) + ' + ' + variables.join(' + ');
+      result += '<br />';
+      result += '<br />';
+    }
+
+    const howManyToProcess = 3;
+    const startWhere = 0;
+
+    for (let machineIndex = startWhere; machineIndex < howManyToProcess; machineIndex++) {
+      const machine = inputArray[machineIndex];
       const parts = machine.split(' ');
 
       let joltageTarget = parts[parts.length - 1].replaceAll('{','').replaceAll('}','').split(',').map(t => parseInt(t));
       let availableButtons = parts.slice(1, parts.length - 1).map(p => p.replaceAll('(','').replaceAll(')','').split(',').map(pt => parseInt(pt)));
 
-      result += '<div style="font-family:monospace;">';
       let augmentedMatrix: number[][] = [];
       for (let j = 0; j < joltageTarget.length; j++) {
         let matrixRow = new Array(availableButtons.length).fill(0);
@@ -220,52 +288,8 @@ export class day10 {
         printMatrix(augmentedMatrix);
       }
 
-      let alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
-      let variables = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
-      let variableConsts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-      for (let rowIndex = 0; rowIndex < augmentedMatrix.length; rowIndex++) {
-        let pivotValue = -1;
-        let rowTotal = '';
-        for (let columnIndex = 0; columnIndex < augmentedMatrix[0].length - 1; columnIndex++) {
-          let cellValue = augmentedMatrix[rowIndex][columnIndex];
-          if (cellValue == 0) {
-            continue;
-          }
-          else {
-            if (pivotValue == -1) {
-              pivotValue = columnIndex;
-              continue;
-            }
-          }
-          if (cellValue == 1) {
-            rowTotal += ' - ' + alphabet[columnIndex];
-          }
-          else if (cellValue > 0) {
-            rowTotal += ' - ' + cellValue.toString() + alphabet[columnIndex];
-          }
-          else if (cellValue == -1) {
-            rowTotal += ' + ' + alphabet[columnIndex];
-          }
-          else {
-            rowTotal += ' + ' + (0 - cellValue).toString() + alphabet[columnIndex];
-          }
-        }
-        let cellValue = augmentedMatrix[rowIndex][augmentedMatrix[0].length - 1];
-        //rowTotal += ' + ' + cellValue;
-        variableConsts[pivotValue] = cellValue;
-        variables[pivotValue] = rowTotal;
-      }
+      convertMatrixToSystemOfEquations(augmentedMatrix);
 
-      variables = variables.slice(0, augmentedMatrix[0].length - 1);
-      for (let varIndex = 0; varIndex < variables.length; varIndex++) {
-        result += alphabet[varIndex] + ' = ' + variableConsts[varIndex] + ' + ' + variables[varIndex] ;
-        result += '<br />';
-      }
-
-      result += '<br />';
-      result += 'sum = ' + variableConsts.reduce((a,b) => a+b) + ' + ' + variables.join(' + ');
-      result += '<br />';
-      result += '<br />';
       result += '<br />';
       result += 'next matrix';
       result += '<br />';

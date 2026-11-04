@@ -222,6 +222,7 @@ export class day10 {
 
       let alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
       let variables = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+      let variableConsts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
       for (let rowIndex = 0; rowIndex < augmentedMatrix.length; rowIndex++) {
         let pivotValue = -1;
         let rowTotal = '';
@@ -250,18 +251,19 @@ export class day10 {
           }
         }
         let cellValue = augmentedMatrix[rowIndex][augmentedMatrix[0].length - 1];
-        rowTotal += ' + ' + cellValue;
+        //rowTotal += ' + ' + cellValue;
+        variableConsts[pivotValue] = cellValue;
         variables[pivotValue] = rowTotal;
       }
 
       variables = variables.slice(0, augmentedMatrix[0].length - 1);
       for (let varIndex = 0; varIndex < variables.length; varIndex++) {
-        result += alphabet[varIndex] + ' = ' + variables[varIndex] ;
+        result += alphabet[varIndex] + ' = ' + variableConsts[varIndex] + ' + ' + variables[varIndex] ;
         result += '<br />';
       }
 
       result += '<br />';
-      result += 'sum = ' + variables.join(' + ');
+      result += 'sum = ' + variableConsts.reduce((a,b) => a+b) + ' + ' + variables.join(' + ');
       result += '<br />';
       result += '<br />';
       result += '<br />';

@@ -210,7 +210,7 @@ export class day10 {
 
     const convertMatrixToSystemOfEquations = (augmentedMatrix: number[][]) => {
       let alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'].slice(0, augmentedMatrix[0].length - 1);
-      let variables = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'].map(v => '1' + v.toString()).slice(0, augmentedMatrix[0].length - 1);
+      let variables = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'].slice(0, augmentedMatrix[0].length - 1);
       let variableConsts = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0].slice(0, augmentedMatrix[0].length - 2);
       for (let rowIndex = 0; rowIndex < augmentedMatrix.length; rowIndex++) {
         let pivotValue = -1;
@@ -227,10 +227,14 @@ export class day10 {
             }
           }
           if (cellValue > 0) {
-            rowTotal += ' + -' + cellValue.toString() + alphabet[columnIndex];
+            for (let addIndex = 0; addIndex < cellValue; addIndex++) {
+              rowTotal += ' + -' + alphabet[columnIndex];
+            }
           }
           else if (cellValue < 0) {
-            rowTotal += ' + ' + (0 - cellValue).toString() + alphabet[columnIndex];
+            for (let addIndex = 0; addIndex < 0 - cellValue; addIndex++) {
+              rowTotal += ' + ' + alphabet[columnIndex];
+            }
           }
         }
         let cellValue = augmentedMatrix[rowIndex][augmentedMatrix[0].length - 1];
@@ -240,7 +244,7 @@ export class day10 {
 
       variables = variables.slice(0, augmentedMatrix[0].length - 1);
       for (let varIndex = 0; varIndex < variables.length; varIndex++) {
-        if (variables[varIndex] == '1' + alphabet[varIndex]) {
+        if (variables[varIndex] == alphabet[varIndex]) {
           result += alphabet[varIndex] + ' = ' + variables[varIndex];
         }
         else {
@@ -256,9 +260,9 @@ export class day10 {
         keepGoing = false;
         for (let i = 0; i < alphabet.length; i++) {
           const letter = alphabet[i];
-          if (variables.indexOf("1" + letter) > -1 && variables.indexOf("-1" + letter) > -1) {
-            variables.splice(variables.indexOf("1" + letter),1);
-            variables.splice(variables.indexOf("-1" + letter),1);
+          if (variables.indexOf(letter) > -1 && variables.indexOf("-" + letter) > -1) {
+            variables.splice(variables.indexOf(letter),1);
+            variables.splice(variables.indexOf("-" + letter),1);
             keepGoing = true;
           }
           if (variables.indexOf("0" + letter) > -1) {
@@ -273,7 +277,7 @@ export class day10 {
     }
 
     const howManyToProcess = 1;
-    const startWhere = 7;
+    const startWhere = 12;
 
     for (let machineIndex = startWhere; machineIndex < startWhere + howManyToProcess; machineIndex++) {
       const machine = inputArray[machineIndex];

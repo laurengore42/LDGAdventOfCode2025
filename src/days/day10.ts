@@ -254,30 +254,39 @@ export class day10 {
       }
 
       result += '<br />';
-      variables = variables.join(' + ').split(' + ').map(v => v.trim()).filter(v => v.length > 0);
+      variables = variables.slice(0, augmentedMatrix[0].length - 1);
+      for (let varIndex = 0; varIndex < variables.length; varIndex++) {
+        if (variables[varIndex] !== alphabet[varIndex] && variables[varIndex].length > 0) {
+          result += variables[varIndex].split('+ ').map(v => v.trim()).filter(v => v.length > 0).join(' + ') + ' >= ' + (0 - variableConsts[varIndex]);
+          result += '<br />';
+        }
+      }
+
+      result += '<br />';
+      var simplifiedVariables = variables.join(' + ').split(' + ').map(v => v.trim()).filter(v => v.length > 0);
       var keepGoing = true;
       while (keepGoing) {
         keepGoing = false;
         for (let i = 0; i < alphabet.length; i++) {
           const letter = alphabet[i];
-          if (variables.indexOf(letter) > -1 && variables.indexOf("-" + letter) > -1) {
-            variables.splice(variables.indexOf(letter),1);
-            variables.splice(variables.indexOf("-" + letter),1);
+          if (simplifiedVariables.indexOf(letter) > -1 && simplifiedVariables.indexOf("-" + letter) > -1) {
+            simplifiedVariables.splice(simplifiedVariables.indexOf(letter),1);
+            simplifiedVariables.splice(simplifiedVariables.indexOf("-" + letter),1);
             keepGoing = true;
           }
-          if (variables.indexOf("0" + letter) > -1) {
-            variables.splice(variables.indexOf("0" + letter),1);
-            keepGoing = true;
-          }
+          // if (variables.indexOf("0" + letter) > -1) {
+          //   variables.splice(variables.indexOf("0" + letter),1);
+          //   keepGoing = true;
+          // }
         }
       }
-      result += 'sum = ' + variableConsts.reduce((a,b) => a+b) + ' + ' + variables.join(' + ');
+      result += 'sum = ' + variableConsts.reduce((a,b) => a+b) + ' + ' + simplifiedVariables.join(' + ');
       result += '<br />';
       result += '<br />';
     }
 
     const howManyToProcess = 1;
-    const startWhere = 12;
+    const startWhere = 14;
 
     for (let machineIndex = startWhere; machineIndex < startWhere + howManyToProcess; machineIndex++) {
       const machine = inputArray[machineIndex];

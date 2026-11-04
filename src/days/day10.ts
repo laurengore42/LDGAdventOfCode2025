@@ -186,8 +186,8 @@ export class day10 {
       }
     }
 
-    for (let i = 0; i < inputArray.length; i++) {
-      const machine = inputArray[i];
+    for (let machineIndex = 0; machineIndex < inputArray.length; machineIndex++) {
+      const machine = inputArray[machineIndex];
       const parts = machine.split(' ');
 
       let joltageTarget = parts[parts.length - 1].replaceAll('{','').replaceAll('}','').split(',').map(t => parseInt(t));
@@ -238,10 +238,10 @@ export class day10 {
             }
           }
           if (cellValue == 1) {
-            rowTotal += ' - ' + alphabet[columnIndex];
+            rowTotal += ' -' + alphabet[columnIndex];
           }
           else if (cellValue > 0) {
-            rowTotal += ' - ' + cellValue.toString() + alphabet[columnIndex];
+            rowTotal += ' -' + cellValue.toString() + alphabet[columnIndex];
           }
           else if (cellValue == -1) {
             rowTotal += ' + ' + alphabet[columnIndex];
@@ -251,7 +251,6 @@ export class day10 {
           }
         }
         let cellValue = augmentedMatrix[rowIndex][augmentedMatrix[0].length - 1];
-        //rowTotal += ' + ' + cellValue;
         variableConsts[pivotValue] = cellValue;
         variables[pivotValue] = rowTotal;
       }
@@ -263,6 +262,19 @@ export class day10 {
       }
 
       result += '<br />';
+      variables = variables.join(' + ').split(' + ').map(v => v.trim());
+      var keepGoing = true;
+      while (keepGoing) {
+        keepGoing = false;
+        for (let i = 0; i < alphabet.length; i++) {
+          const letter = alphabet[i];
+          if (variables.indexOf(letter) > -1 && variables.indexOf("-" + letter) > -1) {
+            variables = variables.splice(variables.indexOf(letter),1);
+            variables = variables.splice(variables.indexOf("-" + letter),1);
+            keepGoing = true;
+          }
+        }
+      }
       result += 'sum = ' + variableConsts.reduce((a,b) => a+b) + ' + ' + variables.join(' + ');
       result += '<br />';
       result += '<br />';
